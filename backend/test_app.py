@@ -40,6 +40,6 @@ class BrowserTestCase(LiveServerTestCase):
         assert self.browser.is_text_present('api-oauth-example-flask')
         assert self.browser.is_text_present('caffeine-metabolite-ratio')
         assert self.browser.is_text_present('excessive-daytime-sleepiness')
-        assert self.browser.is_text_present('morning-person')
+        assert self.browser.is_text_present('caffeine-consumption')
         self.browser.find_by_name('allow').click()
 

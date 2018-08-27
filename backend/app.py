@@ -7,12 +7,12 @@ def create_app():
 
     @app.route('/')
     def index():
-        authorize_url = genomelink.OAuth.authorize_url(scope=['report:caffeine-metabolite-ratio report:excessive-daytime-sleepiness report:morning-person'])
+        authorize_url = genomelink.OAuth.authorize_url(scope=['report:caffeine-consumption report:caffeine-metabolite-ratio report:excessive-daytime-sleepiness'])
 
         # Fetching a protected resource using an OAuth2 token if exists.
         reports = []
         if session.get('oauth_token'):
-            for name in ['caffeine-metabolite-ratio', 'excessive-daytime-sleepiness', 'morning-person']:
+            for name in ['caffeine-metabolite-ratio', 'excessive-daytime-sleepiness', 'caffeine-consumption']:
                 reports.append(genomelink.Report.fetch(name=name, population='european', token=session['oauth_token']))
 
         return render_template('index.html', authorize_url=authorize_url, reports=reports)

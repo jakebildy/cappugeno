@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<link rel="stylesheet" href="index.css">
 <html>
   <head>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -6,9 +7,13 @@
   <body>
     <div class="container">
       <div class="page-header">
-        <p class="lead"><img src="https://s15.postimg.cc/ugxnpntkb/logo_-_Copy.png" width=25% height=25%></p>
+        <p class="lead"><img src="https://s15.postimg.cc/8bza8koln/menu.png" width=25% height=25%></p>
       </div>
 
+      <img src="http://static.hdw.eweb4.com/media/wallpapers_dl/1/143/1424815-coffee-art-love.jpg"   style=
+              "z-index: -1;position: fixed; left: -110px; top: -25px; width: 120%; height: 120%;"></p>
+
+      <text style="color: white;font-family: Futura, 'Trebuchet MS', Arial, sans-serif;font-size: 27px;">
       {% with messages = get_flashed_messages() %}
         {% if messages %}
           {% for message in messages %}
@@ -41,7 +46,7 @@
         </tbody>
       </table>
       {% endif %}
-
+      </text>
     </div>
   </body>
 </html>
