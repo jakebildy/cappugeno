@@ -9,8 +9,11 @@ const functions = require('firebase-functions');
 // Instantiate the Dialogflow client.
 const app = dialogflow({debug: true});
 
+//Pulled from Website
 const CAFFEINE_CONSUMPTION = 3;
-
+const CAFFEINE_METABOLIC_RATIO = 3;
+const EXCESSIVE_DAYTIME_SLEEPINESS = 3;
+const WEIGHT = 70.76;
 
 // Handle the Dialogflow intent named 'how much'.
 app.intent('how much', (conv) => {
@@ -26,16 +29,6 @@ app.intent('anything else - no', (conv) => {
 });
 
 
-
-// Handle the Dialogflow intent named 'coffee ask'.
-// The intent collects a parameter named 'coffeeAsking'.
-app.intent('coffee ask', (conv, {coffeeAsking}) => {
-
-
-    // Respond end the conversation.
-    // conv.close('You could, ' + coffeeAsking + ' has ' + amountCaffeine + " milligrams of caffeine in it. You'll stop feeling the effects at "
-    //  + doHalfLifeCalculations(amountCaffeine));
-});
 
 // Handle the Dialogflow intent named 'coffee past'.
 // The intent collects two lists named 'pastCoffees and pastTimes'.
@@ -106,16 +99,28 @@ function getCaffeineLimit()
     //CAFFEINE CONSUMPTION is returned from GenomeLink, and the value is converted in the following way:
     var MGperKG = 4 + CAFFEINE_CONSUMPTION * 0.5;
 
-    //This gets the user's body mass and converts to Kg - only needed once
+    //This gets the limit
+    var amount = MGperKG*WEIGHT;
 
+    //Excessive daytime sleepiness will effect the amount of caffeine an individual needs to stay awake -
+    //A little more research is needed to pinpoint exact values here, but +/-20mg is a reasonable estimate.
+    //running tensorflow models based on user feedback or doing a study would help make this figure more exact
 
-    return 400;
+    amount += (EXCESSIVE_DAYTIME_SLEEPINESS-2)*10;
+
+    return amount;
 }
 
 function doHalfLifeCalculations(amountCaffeine)
 {
+
+    //Half-life of caffeine ranges from 4-6 hours - CAFFEINE_METABOLIC_RATIO (0-4) is converted to a halflife in
+    //the following way
+
+    const HALFLIFE_HOURS = 4+CAFFEINE_METABOLIC_RATIO*0.5;
+
     //Half-life of caffeine in minutes
-    const HALFLIFE = 5*60;
+    const HALFLIFE = HALFLIFE_HOURS*60;
 
     //Equation for half-life is N(t) = AMOUNT * e ^ (k*t), where t is time, and k is (ln(1/2)/HALFLIFE) - N(t) is the amount left
 
@@ -210,8 +215,13 @@ function calculateCurrentCaffeine(pastCoffees, pastTimes){
             minutesElapsed = (12*60 - parseInt(minutesBefore)) + parseInt(minutesCurrent);
         }
 
+        //Half-life of caffeine ranges from 4-6 hours - CAFFEINE_METABOLIC_RATIO (0-4) is converted to a halflife in
+        //the following way
+
+        const HALFLIFE_HOURS = 4+CAFFEINE_METABOLIC_RATIO*0.5;
+
         //Half-life of caffeine in minutes
-        const HALFLIFE = 5*60;
+        const HALFLIFE = HALFLIFE_HOURS*60;
 
         //Equation for half-life is N(t) = AMOUNT * e ^ (k*t), where t is time, and k is (ln(1/2)/HALFLIFE) - N(t) is the amount left
 
