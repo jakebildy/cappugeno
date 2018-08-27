@@ -28,7 +28,7 @@
       {% if not reports %}
       <a href="{{ authorize_url }}" class="btn btn-default">Connect with genome</a>
       {% else %}
-      <table class="table">
+      <table class="table" id="table">
         <caption>Genome</caption>
         <thead>
           <tr>
@@ -49,8 +49,6 @@
       </text>
     </div>
 
-    <h1 id="bigOne"></h1>
-
     <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase.js"></script>
   <script>
     // Initialize Firebase
@@ -64,9 +62,20 @@
     };
     firebase.initializeApp(config);
 
-    var bigOne = document.getElementById('bigOne');
-    var dbRef = firebase.database().ref().child('text');
-    dbRef.on('value', snap => bigOne.innerText = snap.val());
+    var table = document.getElementsByTagName('table')[0];
+    var cMR = table.rows[1];
+    var eDS = table.rows[2];
+    var cC = table.rows[3];
+
+    //sets values
+    var refValue = firebase.database().ref().child('caffeineMetaboliteRatio');
+    refValue.set(cMR.textContent);
+
+    var refValue2 = firebase.database().ref().child('excessiveDaytimeSleepiness');
+    refValue2.set(eDS.textContent);
+
+    var refValue3 = firebase.database().ref().child('caffeineConsumption');
+    refValue3.set(cC.textContent);
   </script>
   </body>
 </html>
