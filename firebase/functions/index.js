@@ -11,33 +11,33 @@ const app = dialogflow({debug: true});
 
 const CAFFEINE_CONSUMPTION = 3;
 
+
+// Handle the Dialogflow intent named 'how much'.
+app.intent('how much', (conv) => {
+
+    // Respond end the conversation.
+    conv.ask('Based on your genetics, you can have up to ' + getCaffeineLimit() + ' milligrams of caffeine.')
+conv.ask('Anything else?');
+});
+
+// Handle the Dialogflow intent named 'anything else - no'.
+app.intent('anything else - no', (conv) => {
+    conv.close();
+});
+
+
+
 // Handle the Dialogflow intent named 'coffee ask'.
 // The intent collects a parameter named 'coffeeAsking'.
 app.intent('coffee ask', (conv, {coffeeAsking}) => {
 
-    var amountCaffeine;
 
-switch(coffeeAsking){
-    case 'small coffee':
-        amountCaffeine = 100;
-        break;
-    case 'medium coffee':
-        amountCaffeine = 140;
-        break;
-    case 'large coffee':
-        amountCaffeine = 200;
-        break;
-    case 'RedBull':
-        amountCaffeine = 80;
-        break;
-}
-
-// Respond end the conversation.
-// conv.close('You could, ' + coffeeAsking + ' has ' + amountCaffeine + " milligrams of caffeine in it. You'll stop feeling the effects at "
-//  + doHalfLifeCalculations(amountCaffeine));
+    // Respond end the conversation.
+    // conv.close('You could, ' + coffeeAsking + ' has ' + amountCaffeine + " milligrams of caffeine in it. You'll stop feeling the effects at "
+    //  + doHalfLifeCalculations(amountCaffeine));
 });
 
-// Handle the Dialogflow intent named 'coffee ask'.
+// Handle the Dialogflow intent named 'coffee past'.
 // The intent collects two lists named 'pastCoffees and pastTimes'.
 app.intent('coffee past', (conv, {pastCoffees, pastTimes}) => {
 
@@ -49,11 +49,53 @@ else
 {
     var coffees = "";
 
+    var currentCaffeine = calculateCurrentCaffeine(pastCoffees, pastTimes);
 
-    conv.close('You currently have ' + calculateCurrentCaffeine(pastCoffees, pastTimes) + ' milligrams of caffeine in you, so you could!!');
+
+    //Studies seem to suggest the average ideal range is between 200mg-400mg in the average person, or essentially
+    //between half of the limit and the max
+
+    if (currentCaffeine < (getCaffeineLimit()/2))
+    {
+        conv.close('You currently have ' + currentCaffeine + ' milligrams of caffeine in you, so you could!!');
+    }
+    else
+    {
+        conv.close("You already have " + currentCaffeine + " milligrams of caffeine in you. I wouldn't have any more until "
+            + doHalfLifeCalculations(currentCaffeine));
+    }
 }
 });
 
+// Handle the Dialogflow intent named 'hm - coffee past'.
+// The intent collects two lists named 'pastCoffees and pastTimes'.
+app.intent('hm - coffee past', (conv, {pastCoffees, pastTimes}) => {
+
+    if (pastCoffees.length != pastTimes.length)
+{
+    conv.ask("I'm sorry, but I need each individual time you had caffeine and what you had. Want to try again?");
+}
+else
+{
+    var coffees = "";
+
+    var currentCaffeine = calculateCurrentCaffeine(pastCoffees, pastTimes);
+
+
+    //Studies seem to suggest the average ideal range is between 200mg-400mg in the average person, or essentially
+    //between half of the limit and the max
+
+    if (currentCaffeine < (getCaffeineLimit()/2))
+    {
+        conv.close('You currently have ' + currentCaffeine + ' milligrams of caffeine in you, so you could!!');
+    }
+    else
+    {
+        conv.close("You already have " + currentCaffeine + " milligrams of caffeine in you. I wouldn't have any more until "
+            + doHalfLifeCalculations(currentCaffeine));
+    }
+}
+});
 
 function getCaffeineLimit()
 {
@@ -129,21 +171,21 @@ function calculateCurrentCaffeine(pastCoffees, pastTimes){
 
     var response = 0;
 
+    var d = new Date();
+
+    //quick conversion to EST - needs to be standardized
+    var offset = -4;
+    var hours = d.getHours() + offset;
+    if (hours < 0)
+        hours += 24;
+
+    var minutes = d.getMinutes();
+
+    var minutesCurrent = (parseInt(hours) * 60) + minutes;
+
     for (var i in pastCoffees)
     {
-        var amountCaffeine = 100;
-
-        var d = new Date();
-
-        //quick conversion to EST - needs to be standardized
-        var offset = -4;
-        var hours = d.getHours() + offset;
-        if (hours < 0)
-            hours += 24;
-
-        var minutes = d.getMinutes();
-
-        var minutesCurrent = (parseInt(hours) * 60) + minutes;
+        var amountCaffeine = coffeeToMg(pastCoffees[i]);
 
         var hoursPast = pastTimes[i].substring(11, 13);
         if (hoursPast.charAt(0) === '0')
@@ -181,6 +223,30 @@ function calculateCurrentCaffeine(pastCoffees, pastTimes){
     }
 
     return Math.round(response);
+}
+
+function coffeeToMg(coffee)
+{
+    var amountCaffeine;
+
+    switch(coffee){
+        case 'small coffee':
+            amountCaffeine = 100;
+            break;
+        case 'medium coffee':
+            amountCaffeine = 140;
+            break;
+        case 'large coffee':
+            amountCaffeine = 200;
+            break;
+        case 'Red Bull':
+            amountCaffeine = 80;
+            break;
+        default:
+            amountCaffeine = 0;
+    }
+
+    return amountCaffeine;
 }
 
 // Set the DialogflowApp object to handle the HTTPS POST request.
