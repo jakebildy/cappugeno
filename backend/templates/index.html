@@ -48,5 +48,25 @@
       {% endif %}
       </text>
     </div>
+
+    <h1 id="bigOne"></h1>
+
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase.js"></script>
+  <script>
+    // Initialize Firebase
+    var config = {
+      apiKey: "AIzaSyD0liN934uLgdN7LwwHs2tPUl-BG5jgeEU",
+      authDomain: "cappugeno-9fd04.firebaseapp.com",
+      databaseURL: "https://cappugeno-9fd04.firebaseio.com",
+      projectId: "cappugeno-9fd04",
+      storageBucket: "cappugeno-9fd04.appspot.com",
+      messagingSenderId: "584906693698"
+    };
+    firebase.initializeApp(config);
+
+    var bigOne = document.getElementById('bigOne');
+    var dbRef = firebase.database().ref().child('text');
+    dbRef.on('value', snap => bigOne.innerText = snap.val());
+  </script>
   </body>
 </html>
