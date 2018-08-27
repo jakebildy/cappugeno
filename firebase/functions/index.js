@@ -9,8 +9,10 @@ const functions = require('firebase-functions');
 // Instantiate the Dialogflow client.
 const app = dialogflow({debug: true});
 
-// Handle the Dialogflow intent named 'favorite color'.
-// The intent collects a parameter named 'color'.
+const CAFFEINE_CONSUMPTION = 3;
+
+// Handle the Dialogflow intent named 'coffee ask'.
+// The intent collects a parameter named 'coffeeAsking'.
 app.intent('coffee ask', (conv, {coffeeAsking}) => {
 
     var amountCaffeine;
@@ -30,10 +32,48 @@ switch(coffeeAsking){
         break;
 }
 
-// Respond with the user's lucky number and end the conversation.
-conv.close('You could, ' + coffeeAsking + ' has ' + amountCaffeine + " milligrams of caffeine in it. You'll stop feeling the effects at "
-    + doHalfLifeCalculations(amountCaffeine));
+// Respond end the conversation.
+// conv.close('You could, ' + coffeeAsking + ' has ' + amountCaffeine + " milligrams of caffeine in it. You'll stop feeling the effects at "
+//  + doHalfLifeCalculations(amountCaffeine));
 });
+
+// Handle the Dialogflow intent named 'coffee ask'.
+// The intent collects two lists named 'pastCoffees and pastTimes'.
+app.intent('coffee past', (conv, {pastCoffees, pastTimes}) => {
+
+    if (pastCoffees.length != pastTimes.length)
+{
+    conv.ask("I'm sorry, but I need each individual time you had caffeine and what you had. Want to try again?");
+}
+else
+{
+    var coffees = "";
+
+    // Respond end the conversation.
+    for (var coffee in pastCoffees)
+    {
+        coffees+=pastCoffees[coffee]+", "
+    }
+
+    conv.close('If you had a ' + coffees + 'you could!!');
+}
+});
+
+
+function getCaffeineLimit()
+{
+    //The available guidelines for caffeine use suggests that
+    // performance benefits can be seen with moderate amounts (2-4 mg·kg–1 body mass) of caffeine -
+    // benefits are lost between 4-6 mg·kg–1, which aligns with the recommendations of Health Canada and the EU.
+
+    //CAFFEINE CONSUMPTION is returned from GenomeLink, and the value is converted in the following way:
+    var MGperKG = 4 + CAFFEINE_CONSUMPTION * 0.5;
+
+    //This gets the user's body mass and converts to Kg - only needed once
+
+
+    return 400;
+}
 
 function doHalfLifeCalculations(amountCaffeine)
 {
@@ -46,7 +86,7 @@ function doHalfLifeCalculations(amountCaffeine)
 
     //We need to check when N(t) =< UNNOTICEABLE_AMOUNT, which is when caffeine effects become unnoticeable
 
-    var UNNOTICEABLE_AMOUNT = 400 / 2;
+    var UNNOTICEABLE_AMOUNT = getCaffeineLimit() / 2;
     var t = 0;
     var N_t = amountCaffeine * Math.exp(K*t);
 
