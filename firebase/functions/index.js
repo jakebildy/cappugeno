@@ -49,13 +49,8 @@ else
 {
     var coffees = "";
 
-    // Respond end the conversation.
-    for (var coffee in pastCoffees)
-    {
-        coffees+=pastCoffees[coffee]+", "
-    }
 
-    conv.close('If you had a ' + coffees + 'you could!!');
+    conv.close('You currently have ' + calculateCurrentCaffeine(pastCoffees, pastTimes) + ' milligrams of caffeine in you, so you could!!');
 }
 });
 
@@ -128,6 +123,64 @@ function doHalfLifeCalculations(amountCaffeine)
     var result = hours+":"+minutesFinal+" "+AMorPM;
 
     return result;
+}
+
+function calculateCurrentCaffeine(pastCoffees, pastTimes){
+
+    var response = 0;
+
+    for (var i in pastCoffees)
+    {
+        var amountCaffeine = 100;
+
+        var d = new Date();
+
+        //quick conversion to EST - needs to be standardized
+        var offset = -4;
+        var hours = d.getHours() + offset;
+        if (hours < 0)
+            hours += 24;
+
+        var minutes = d.getMinutes();
+
+        var minutesCurrent = (parseInt(hours) * 60) + minutes;
+
+        var hoursPast = pastTimes[i].substring(11, 13);
+        if (hoursPast.charAt(0) === '0')
+        {
+            hoursPast = hoursPast.charAt(1);
+        }
+        var minutesPast = pastTimes[i].substring(14, 16);
+        if (minutesPast.charAt(0) === '0')
+        {
+            minutesPast = minutesPast.charAt(1);
+        }
+
+        var minutesBefore = (parseInt(hoursPast)*60)+parseInt(minutesPast);
+        var minutesElapsed = 0;
+
+        if (minutesBefore < minutesCurrent)
+        {
+            minutesElapsed = parseInt(minutesCurrent)-parseInt(minutesBefore);
+        }
+        else
+        {
+            minutesElapsed = (12*60 - parseInt(minutesBefore)) + parseInt(minutesCurrent);
+        }
+
+        //Half-life of caffeine in minutes
+        const HALFLIFE = 5*60;
+
+        //Equation for half-life is N(t) = AMOUNT * e ^ (k*t), where t is time, and k is (ln(1/2)/HALFLIFE) - N(t) is the amount left
+
+        var K = (-0.693147181/HALFLIFE);
+
+        var N_t = amountCaffeine * Math.exp(K*minutesElapsed);
+
+        response += N_t;
+    }
+
+    return Math.round(response);
 }
 
 // Set the DialogflowApp object to handle the HTTPS POST request.
