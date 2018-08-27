@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="page-header">
+        <p class="lead"><img src="https://s15.postimg.cc/ugxnpntkb/logo_-_Copy.png" width=25% height=25%></p>
+      </div>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-danger" role="alert">
+              <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% if not reports %}
+      <a href="{{ authorize_url }}" class="btn btn-default">Connect with genome</a>
+      {% else %}
+      <table class="table">
+        <caption>Genome</caption>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Genetic insights</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for report in reports %}
+          <tr>
+            <th scope="row">{{ report.phenotype.display_name }}</th>
+            <td>{{ report.summary.score }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+    </div>
+  </body>
+</html>
