@@ -4,9 +4,10 @@ Cappugeno uses the user's genetic information to track their caffeine intake.
 
 
 # Technical Details 
- **:iphone: Frontend**: Java (Android Studio), HTML/JavaScript using a WebView
+ **:iphone: Frontend**: Javascript using Dialogflow/Actions on Google
+ **:computer: Website**: Python/Django/HTML/Javascript
+ **:lock: Backend**: Firebase:fire:, GenomeLink API
  
- **:lock: Backend**: Python/Flask using Genomelink API
  # How it works :rocket:
 
 
