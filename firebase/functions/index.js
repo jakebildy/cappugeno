@@ -13,7 +13,7 @@ const app = dialogflow({debug: true});
 var CAFFEINE_CONSUMPTION = 3;
 var CAFFEINE_METABOLIC_RATIO = 3;
 var EXCESSIVE_DAYTIME_SLEEPINESS = 3;
-var WEIGHT = 70.76;
+var WEIGHT;
 
 // Import Admin SDK
 var admin = require("firebase-admin");
@@ -51,7 +51,8 @@ admin.database().ref().once("value").then((snapshot) => {
 app.intent('how much', (conv) => {
 
      // Respond end the conversation.
-    conv.ask('Based on your genetics, you can have up to ' + getCaffeineLimit(CAFFEINE_CONSUMPTION, EXCESSIVE_DAYTIME_SLEEPINESS) +  ' milligrams of caffeine.')
+    conv.ask('Based on your genetics, you can have up to ' + Math.round(getCaffeineLimit(CAFFEINE_CONSUMPTION, EXCESSIVE_DAYTIME_SLEEPINESS))
+    +  ' milligrams of caffeine.')
     conv.ask('Anything else?');
  
 });
@@ -61,7 +62,25 @@ app.intent('anything else - no', (conv) => {
         conv.close();
 });
 
+// Handle the Dialogflow intent named 'weight'.
+app.intent('weight', (conv, {weight}) => {
+        conv.user.storage.weightUser = parseInt(weight);
+        conv.ask("Added your weight information!");
+        conv.close("Welcome to Cappugeno! Try asking me 'should I have a coffee'")
+});
 
+
+// Handle the Dialogflow intent named 'Default Welcome Intent'.
+app.intent('Default Welcome Intent', (conv) => {
+    
+    //conv.ask(conv.user.storage.weightUser);
+    
+    if (parseInt(conv.user.storage.weightUser) > 0){
+        conv.ask("Hey! What can I help you with?")
+        WEIGHT = parseInt(conv.user.storage.weightUser);}
+    else 
+        conv.ask("This is your first time using Cappugeno, so I need to know how much you weigh");
+});
 
 // Handle the Dialogflow intent named 'coffee past'.
 // The intent collects two lists named 'pastCoffees and pastTimes'.
@@ -133,8 +152,8 @@ function getCaffeineLimit(caffeineConsumption, excessiveSleepiness)
         var caffeine = caffeineConsumption;
         var MGperKG = 4 + caffeine * 0.5;
 
-        //This gets the limit 
-        var amount = MGperKG*WEIGHT;
+        //This gets the limit and converts weight to KG
+        var amount = MGperKG*parseInt(WEIGHT)*0.454;
         
         //Excessive daytime sleepiness will effect the amount of caffeine an individual needs to stay awake -
         //A little more research is needed to pinpoint exact values here, but +/-20mg is a reasonable estimate. 
