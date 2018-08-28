@@ -10,17 +10,50 @@ const functions = require('firebase-functions');
 const app = dialogflow({debug: true});
 
 //Pulled from Website
-const CAFFEINE_CONSUMPTION = 3;
-const CAFFEINE_METABOLIC_RATIO = 3;
-const EXCESSIVE_DAYTIME_SLEEPINESS = 3;
-const WEIGHT = 70.76;
+var CAFFEINE_CONSUMPTION = 3;
+var CAFFEINE_METABOLIC_RATIO = 3;
+var EXCESSIVE_DAYTIME_SLEEPINESS = 3;
+var WEIGHT = 70.76;
+
+// Import Admin SDK
+var admin = require("firebase-admin");
+const {WebhookClient} = require('dialogflow-fulfillment');
+
+// Initialize Firebase Admin SDK.
+admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    databaseURL: 'ws://cappugeno-9fd04.firebaseio.com/',
+});
+
+process.env.DEBUG = 'dialogflow:debug';
+
+exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
+    const agent = new WebhookClient({ request, response });
+console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
+console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
+});
+
+var cMR, cC, eDS;
+
+admin.database().ref().once("value").then((snapshot) => {
+    cMR = snapshot.child("caffeineMetaboliteRatio").val();
+CAFFEINE_METABOLIC_RATIO = parseInt(cMR.substring(45,53));
+
+cC = snapshot.child("caffeineConsumption").val();
+CAFFEINE_CONSUMPTION = parseInt(cC.substring(45,53));
+
+eDS = snapshot.child("excessiveDaytimeSleepiness").val();
+EXCESSIVE_DAYTIME_SLEEPINESS = parseInt(eDS.substring(53,60));
+
+});
 
 // Handle the Dialogflow intent named 'how much'.
 app.intent('how much', (conv) => {
 
     // Respond end the conversation.
-    conv.ask('Based on your genetics, you can have up to ' + getCaffeineLimit() + ' milligrams of caffeine.')
+    conv.ask('Based on your genetics, you can have up to ' + getCaffeineLimit(CAFFEINE_CONSUMPTION, EXCESSIVE_DAYTIME_SLEEPINESS) +  ' milligrams of caffeine.')
 conv.ask('Anything else?');
+
 });
 
 // Handle the Dialogflow intent named 'anything else - no'.
@@ -90,14 +123,15 @@ else
 }
 });
 
-function getCaffeineLimit()
+function getCaffeineLimit(caffeineConsumption, excessiveSleepiness)
 {
     //The available guidelines for caffeine use suggests that
     // performance benefits can be seen with moderate amounts (2-4 mg·kg–1 body mass) of caffeine -
     // benefits are lost between 4-6 mg·kg–1, which aligns with the recommendations of Health Canada and the EU.
 
     //CAFFEINE CONSUMPTION is returned from GenomeLink, and the value is converted in the following way:
-    var MGperKG = 4 + CAFFEINE_CONSUMPTION * 0.5;
+    var caffeine = caffeineConsumption;
+    var MGperKG = 4 + caffeine * 0.5;
 
     //This gets the limit
     var amount = MGperKG*WEIGHT;
@@ -106,7 +140,8 @@ function getCaffeineLimit()
     //A little more research is needed to pinpoint exact values here, but +/-20mg is a reasonable estimate.
     //running tensorflow models based on user feedback or doing a study would help make this figure more exact
 
-    amount += (EXCESSIVE_DAYTIME_SLEEPINESS-2)*10;
+    var sleepiness = parseInt(excessiveSleepiness);
+    amount += (sleepiness-2)*10;
 
     return amount;
 }
@@ -248,6 +283,15 @@ function coffeeToMg(coffee)
             break;
         case 'large coffee':
             amountCaffeine = 200;
+            break;
+        case 'small iced coffee':
+            amountCaffeine = 40;
+            break;
+        case 'medium iced coffee':
+            amountCaffeine = 90;
+            break;
+        case 'large iced coffee':
+            amountCaffeine = 115;
             break;
         case 'Red Bull':
             amountCaffeine = 80;
