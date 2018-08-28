@@ -180,8 +180,11 @@ function doHalfLifeCalculations(amountCaffeine)
 
         var K = (-0.693147181/HALFLIFE);
 
-        //We need to check when N(t) =< UNNOTICEABLE_AMOUNT, which is when caffeine effects become unnoticeable
-
+        //We need to check when N(t) =< UNNOTICEABLE_AMOUNT, which is when caffeine effects become less beneficial
+  
+        //Studies seem to suggest the average ideal range is between 200mg-400mg in the average person, or essentially
+        //between half of the limit and the max
+  
         var UNNOTICEABLE_AMOUNT = getCaffeineLimit(CAFFEINE_CONSUMPTION, EXCESSIVE_DAYTIME_SLEEPINESS) / 2;
         var t = 0;
         var N_t = amountCaffeine * Math.exp(K*t);
@@ -192,7 +195,7 @@ function doHalfLifeCalculations(amountCaffeine)
             t++;
         }
 
-        //t is now equal to the number of minutes until caffeine < 20mg. We now need to convert that into a time
+        //t is now equal to the number of minutes until caffeine < the unnoticeable amount. We now need to convert that into a time
         var d = new Date();
         var hours = d.getHours();
         var minutes = d.getMinutes();
